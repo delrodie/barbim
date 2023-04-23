@@ -1,0 +1,221 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parent() }}DASHBOARD{% endblock %}
+
+{% block body %}
+    <main>
+        <div class="header">
+            <h2>Tableau de bord</h2>
+            <span id="date"></span>
+        </div>
+
+        <div class="content mt-5">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card courbe">
+                        <div class="card-header">Courbe de recette</div>
+                        <div class="card-body">
+                            <canvas id="myChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card recette mt-3">
+                        <div class="card-header">Recettes du mois</div>
+                        <div class="card-body">
+                            <div class="row row-cols-1 row-cols-md-3 g-4 depot">
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-header">SOLIBRA</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">125.000 <span>FCFA</span></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-header">BRASSIVOIRE</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">250.000 <span>FCFA</span></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-header">AUTRES</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">75.000 <span>FCFA</span></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card stock mt-3">
+                        <div class="card-header">Etat du stock</div>
+                        <div class="card-body">
+                            <div class="row row-cols-md-3 g-4 depot">
+                                <div class="col">
+                                    <div class="card">
+                                        <div class="card-header">SOLIBRA</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">25</h5>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col">
+                                    <div class="card">
+                                        <div class="card-header">BRASSIZOIRE</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">65</h5>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col">
+                                    <div class="card">
+                                        <div class="card-header">AUTRES</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">25</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="row row-cols-lg-3 g-0 text-center finance">
+                                <div class="col depenses">
+                                    <h6>Depenses</h6>
+                                    <div class="montant">
+                                        25.000 <span>FCFA</span>
+                                    </div>
+                                </div>
+                                <div class="col recettes">
+                                    <h6>Recettes</h6>
+                                    <div class="montant">
+                                        75.000 <span>FCFA</span>
+                                    </div>
+                                </div>
+                                <div class="col ecart">
+                                    <h6>Ecart</h6>
+                                    <div class="montant">
+                                        + 50.000 <span>FCFA</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card">
+                                <div class="card-header">Recette par catégorie</div>
+                                <div class="card-body">
+                                    <ul class="recettes">
+                                        <li>Bière <span class="montant">253.000 <span>FCFA</span> </span></li>
+                                        <li>Vins <span class="montant">650.000 <span>FCFA</span> </span></li>
+                                        <li>Energie <span class="montant">175.650 <span>FCFA</span> </span></li>
+                                        <li>Soda <span class="montant">235.000 <span>FCFA</span> </span></li>
+                                        <li>Eau minérale <span class="montant">62.500 <span>FCFA</span> </span></li>
+                                        <li class="total">Total <span class="montant">1.250.000 <span>FCFA</span></span></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="card diagramme mt-3">
+                                <div class="card-header">Diagramme</div>
+                                <div class="card-body">
+                                    <canvas id="diagramme"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('myChart');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['01', '02', '03', '04'],
+                datasets: [
+                    {
+                        label: 'SOLIBRA',
+                        data: [275000, 152000, 350000, 400000],
+                        borderWidth: 1,
+                        borderColor: ['rgb(255,0,0)'],
+                        backgroundColor: ['rgb(255,0,0)']
+                    },
+                    {
+                        label: 'BRASSIVOIRE',
+                        data: [285000, 350000, 90000, 75000],
+                        borderWidth: 1,
+                        borderColor: ['rgb(0,140,255)'],
+                        backgroundColor: ['rgb(0,140,255)']
+                    },
+                    {
+                        label: 'AUTRES',
+                        data: [100000, 75000, 85000, 87500],
+                        borderWidth: 1,
+                        borderColor: ['rgb(232,106,2)'],
+                        backgroundColor: ['rgb(232,106,2)']
+                    },
+                ]
+            },
+            options: {
+                animations: {
+                    tension: {
+                        duration: 1000,
+                        easing: 'linear',
+                        from: 1,
+                        to: 0,
+                        loop: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+    <script>
+        const pie = document.getElementById('diagramme');
+
+        new Chart(pie, {
+            type: 'pie',
+            data: {
+                labels: ['BRASSIVOIRE', 'SOLIBRA', 'AUTRES'],
+                datasets: [
+                    {
+                        label: 'RECETTE DU MOIS',
+                        data: [275000, 152000, 350000],
+                        backgroundColor: ['rgb(0,140,255)', 'rgb(255,0,0)', 'rgb(232,106,2)']
+                    }
+                ]
+            },
+            options:{
+                animations: {
+                    tension: {
+                        duration: 1000,
+                        easing: 'easeInBounce',
+                        from: 1,
+                        to: 0,
+                        loop: true
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

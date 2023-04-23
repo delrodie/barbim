@@ -8,28 +8,7 @@
         {% endblock %}
     </head>
     <body>
-        <div class="container">
-            <div class="sidebar">
-                <div class="profile-card">
-                    <h2>BIIM</h2>
-                    <p><span>SY</span>stème de <span>GES</span>tion de <span>BAR</span></p>
-                    <hr class="logo">
-                    <ul>
-                        <li><a href="">Tableau de bord</a></li>
-                        <li><a href="">Vente</a></li>
-                        <li><a href="">Categorie</a></li>
-                        <li><a href="">Produit</a></li>
-                        <li><a href="">Fournisseur</a></li>
-                        <li><a href="">Achat</a></li>
-                        <li><a href="">Depenses</a></li>
-                    </ul>
-                    <hr>
-                    <ul>
-                        <li><a href="{{ path('app_template') }}">Utilisateurs</a></li>
-                        <li><a href="#">Deconnexion</a></li>
-                    </ul>
-                </div>
-            </div>
+        <div class="container security">
             {% block body %}{% endblock %}
         </div>
 
