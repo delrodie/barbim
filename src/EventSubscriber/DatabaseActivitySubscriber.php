@@ -2,7 +2,9 @@
 
 namespace App\EventSubscriber;
 
+use App\Entity\Categorie;
 use App\Entity\Fournisseur;
+use App\Repository\CategorieRepository;
 use App\Repository\FournisseurRepository;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Events;
@@ -17,7 +19,8 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 class DatabaseActivitySubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private FournisseurRepository $fournisseurRepository, private Flasher $flasher
+        private FournisseurRepository $fournisseurRepository, private Flasher $flasher,
+        private CategorieRepository $categorieRepository
     )
     {
     }
@@ -42,6 +45,12 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $message = "Le fournisseur {$entity->getNom()} a été enregistré avec succès!";
         }
 
+        if ($entity instanceof Categorie){
+            $this->slug($args, 'categorie');
+            $this->codeCategorie($args);
+            $message = "La catégorie {$entity->getNom()} a été enregistrée avec succès!";
+        }
+
         $this->messageFlasher($message);
     }
 
@@ -53,7 +62,13 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         if ($entity instanceof Fournisseur){
             $this->slug($args, 'fournisseur');
 
-            $message = "Le fournisseur {$entity->getNom()} a été modifié avec succès!";
+            $message = "Le fournisseur '{$entity->getNom()}' a été modifié avec succès!";
+        }
+
+        if ($entity instanceof Categorie){
+            $this->slug($args, 'categorie');
+            $this->codeCategorie($args);
+            $message = "La catégorie '{$entity->getNom()}' a été modifiée avec succès!";
         }
 
         $this->messageFlasher($message);
@@ -66,6 +81,10 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
 
         if ($entity instanceof Fournisseur){
             $message = "Le fournisseur {$entity->getNom()} a été supprimé avec succès!";
+        }
+
+        if ($entity instanceof Categorie){
+            $message = "La catégorie '{$entity->getNom()}' a été supprimée avec succès!";
         }
 
         $this->messageFlasher($message);
@@ -96,5 +115,17 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         }
 
         return;
+    }
+
+    public function codeCategorie(LifecycleEventArgs $args)
+    {
+        $entity = $args->getObject();
+        $id = $entity->getId();
+        if ($id < 10) $code = "10{$id}";
+        else $code = "1{$id}";
+        $entity->setCode( (int) $code);
+        $this->categorieRepository->save($entity, true);
+
+        return true;
     }
 }
