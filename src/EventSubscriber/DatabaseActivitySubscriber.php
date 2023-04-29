@@ -3,26 +3,33 @@
 namespace App\EventSubscriber;
 
 use App\Entity\Categorie;
+use App\Entity\Commande;
 use App\Entity\Fournisseur;
 use App\Entity\Produit;
 use App\Repository\CategorieRepository;
+use App\Repository\CommandeRepository;
 use App\Repository\FournisseurRepository;
 use App\Repository\ProduitRepository;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\PostPersist;
 use Doctrine\ORM\Mapping\PostUpdate;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Flasher\Prime\Flasher;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 class DatabaseActivitySubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private FournisseurRepository $fournisseurRepository, private Flasher $flasher,
-        private CategorieRepository $categorieRepository, private ProduitRepository $produitRepository
+        private CategorieRepository $categorieRepository, private ProduitRepository $produitRepository,
+        private CommandeRepository $commandeRepository
     )
     {
     }
@@ -32,8 +39,39 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         return [
             Events::postPersist,
             Events::postUpdate,
-            Events::postRemove
+            Events::postRemove,
+            Events::preFlush,
         ];
+    }
+
+    public function preFlush(PreFlushEventArgs $args): void
+    {
+        $em = $args->getObjectManager();
+        $unitOfWork = $em->getUnitOfWork();
+        $entities = $unitOfWork->getScheduledEntityInsertions();
+
+        foreach ($entities as $entity){
+            if ($entity instanceof Commande) {
+                $verif = $this->commandeRepository->findOneBy(['ref' => $entity->getRef(), 'fournisseur' => $entity->getFournisseur()]);
+                if ($verif){
+                    //$this->messageFlasher("");
+
+                    $response = new RedirectResponse('/commande', 301);
+                    //$message="test";
+
+                    $this->flasher
+                        ->options([
+                            'timer' => 7000,
+                            'position' => 'top-center'
+                        ])
+                        ->addError("Echef, cette commande a déjà été enregistrée {$response}");
+
+                    throw new ValidatorException("Echec, cette commande a déjà été enregistrée");
+                }
+            }
+        }
+
+
     }
 
     public function postPersist(LifecycleEventArgs $args)
@@ -57,6 +95,11 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $this->slug($args, 'produit');
             $this->codeProduit($args);
             $message = "Le produit '{$entity->getNom()}' a été ajouté avec succès!";
+        }
+
+        if ($entity instanceof Commande){
+            $this->commandeReste($args);
+            $message = "La commande '{$entity->getRef()}' a été ajoutée avec succès!";
         }
 
         $this->messageFlasher($message);
@@ -83,6 +126,11 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $this->slug($args, 'produit');
             $this->codeProduit($args);
             $message = "Le produit '{$entity->getNom()}' a été ajouté avec succès!";
+        }
+
+        if ($entity instanceof Commande){
+            //$this->commandeReste($args);
+            $message = "La commande '{$entity->getRef()}' a été modifiée avec succès!";
         }
 
         $this->messageFlasher($message);
@@ -159,4 +207,16 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
 
         return true;
     }
+
+    public function commandeReste(LifecycleEventArgs $args): bool
+    {
+        $entity = $args->getObject();
+        $entity->setReste($entity->getMontant());
+        $entity->setFlag(0);
+        $this->commandeRepository->save($entity, true);
+
+        return true;
+    }
+
+
 }

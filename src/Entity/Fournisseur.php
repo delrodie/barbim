@@ -3,7 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\FournisseurRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use phpDocumentor\Reflection\Types\True_;
 
 #[ORM\Entity(repositoryClass: FournisseurRepository::class)]
 class Fournisseur
@@ -21,6 +24,14 @@ class Fournisseur
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $type = null;
+
+    #[ORM\OneToMany(mappedBy: 'fournisseur', targetEntity: Commande::class)]
+    private Collection $commandes;
+
+    public function __construct()
+    {
+        $this->commandes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -61,5 +72,43 @@ class Fournisseur
         $this->type = $type;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
+    }
+
+    public function addCommande(Commande $commande): self
+    {
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes->add($commande);
+            $commande->setFournisseur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(Commande $commande): self
+    {
+        if ($this->commandes->removeElement($commande)) {
+            // set the owning side to null (unless already changed)
+            if ($commande->getFournisseur() === $this) {
+                $commande->setFournisseur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        if($this->getType() === "1") $depot = "(Depôt)";
+        else $depot = "(Sous-depot)";
+
+        return "{$this->getNom()} {$depot}";
     }
 }

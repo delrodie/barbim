@@ -1,0 +1,14 @@
+{{ form_start(form) }}
+<div class="row form-group">
+    <div class="col-3 mt-3">{{ form_row(form.fournisseur) }}</div>
+    <div class="col-2 mt-3">{{ form_row(form.ref) }}</div>
+    <div class="col-2 mt-3">{{ form_row(form.dateCde) }}</div>
+    <div class="col-2 mt-3">{{ form_row(form.montant) }}</div>
+    <div class="col-3 mt-5 text-center">
+        {{ form_widget(form) }}
+        <a href="{{ path('app_commande_index') }}" class="btn btn-outline-secondary">Annuler</a>
+        <button class="btn btn-warning">{{ button_label|default('Enregistrer') }}</button>
+    </div>
+</div>
+
+{{ form_end(form) }}
