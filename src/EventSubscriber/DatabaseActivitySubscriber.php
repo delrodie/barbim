@@ -4,8 +4,10 @@ namespace App\EventSubscriber;
 
 use App\Entity\Categorie;
 use App\Entity\Fournisseur;
+use App\Entity\Produit;
 use App\Repository\CategorieRepository;
 use App\Repository\FournisseurRepository;
+use App\Repository\ProduitRepository;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\PostPersist;
@@ -20,7 +22,7 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private FournisseurRepository $fournisseurRepository, private Flasher $flasher,
-        private CategorieRepository $categorieRepository
+        private CategorieRepository $categorieRepository, private ProduitRepository $produitRepository
     )
     {
     }
@@ -51,6 +53,12 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $message = "La catégorie {$entity->getNom()} a été enregistrée avec succès!";
         }
 
+        if ($entity instanceof Produit){
+            $this->slug($args, 'produit');
+            $this->codeProduit($args);
+            $message = "Le produit '{$entity->getNom()}' a été ajouté avec succès!";
+        }
+
         $this->messageFlasher($message);
     }
 
@@ -71,6 +79,12 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $message = "La catégorie '{$entity->getNom()}' a été modifiée avec succès!";
         }
 
+        if ($entity instanceof Produit){
+            $this->slug($args, 'produit');
+            $this->codeProduit($args);
+            $message = "Le produit '{$entity->getNom()}' a été ajouté avec succès!";
+        }
+
         $this->messageFlasher($message);
     }
 
@@ -85,6 +99,10 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
 
         if ($entity instanceof Categorie){
             $message = "La catégorie '{$entity->getNom()}' a été supprimée avec succès!";
+        }
+
+        if ($entity instanceof Produit){
+            $message = "Le produit '{$entity->getNom()}' a été supprimé avec succès!";
         }
 
         $this->messageFlasher($message);
@@ -117,7 +135,7 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         return;
     }
 
-    public function codeCategorie(LifecycleEventArgs $args)
+    public function codeCategorie(LifecycleEventArgs $args): bool
     {
         $entity = $args->getObject();
         $id = $entity->getId();
@@ -125,6 +143,19 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         else $code = "1{$id}";
         $entity->setCode( (int) $code);
         $this->categorieRepository->save($entity, true);
+
+        return true;
+    }
+
+    public function codeProduit(LifecycleEventArgs $args): bool
+    {
+        $entity = $args->getObject(); //dd($entity);
+        $id = $entity->getId();
+        if (10 > $id) $code = "0{$id}";
+        else $code = $id;
+
+        $entity->setCode($entity->getCategorie()->getCode().''.$code);
+        $this->produitRepository->save($entity, true);
 
         return true;
     }

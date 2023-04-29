@@ -223,6 +223,19 @@ main .content .card .finance .montant span {
   font-weight: 400;
 }
 
+main .content form .form-group ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+main .content form .form-group ul li {
+  padding: 10px;
+  background-color: red;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+}
+
 .security {
   width: 500px;
   min-height: 300px;

@@ -3,14 +3,14 @@
 {% block body %}
     <main>
         <div class="header">
-            <h2>Liste des {{ categorie.nom }}s</h2>
+            <h2>Gestion des produits</h2>
             <span id="date"></span>
         </div>
 
         <div class="content mt-5">
             <div class="row mb-5">
                 <div class="col text-end">
-                    <a href="{{ path('app_categorie_index') }}" class="btn btn-warning"><i class="bi bi-reply-all-fill"></i> Retour à la liste</a>
+                    <a href="{{ path('app_produit_new') }}" class="btn btn-warning"><i class="bi bi-plus-circle"></i> Ajouter</a>
                 </div>
             </div>
             <div class="row formualire-liste">
@@ -60,7 +60,7 @@
 {% endblock %}
 
 {% block title %}
-    Liste des {{ categorie.nom }}s
+    Gestion des produits
 {% endblock %}
 {% block stylesheets %}
     {{ parent() }}

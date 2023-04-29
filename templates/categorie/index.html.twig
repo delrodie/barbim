@@ -21,6 +21,7 @@
                                     <th class="text-center">#</th>
                                     <th class="text-center">Code</th>
                                     <th class="text-center">Nom</th>
+                                    <th class="text-center">Produits</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                                 </thead>
@@ -30,8 +31,9 @@
                                         <td class="text-center">{{ loop.index }}</td>
                                         <td class="text-center">{{ categorie.code }}</td>
                                         <td>{{ categorie.nom }}</td>
+                                        <td class="text-center">{{ categorie.produits|length }}</td>
                                         <td class="text-center">
-                                            <a href="#" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
+                                            <a href="{{ path('app_categorie_show', {'slug': categorie.slug}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
                                             <a href="{{ path('app_categorie_edit', {'slug': categorie.slug}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
                                         </td>
                                     </tr>

@@ -3,53 +3,26 @@
 {% block body %}
     <main>
         <div class="header">
-            <h2>Liste des {{ categorie.nom }}s</h2>
+            <h2>Gestion des categories</h2>
             <span id="date"></span>
         </div>
 
         <div class="content mt-5">
             <div class="row mb-5">
                 <div class="col text-end">
-                    <a href="{{ path('app_categorie_index') }}" class="btn btn-warning"><i class="bi bi-reply-all-fill"></i> Retour à la liste</a>
+                    <a href="{{ path('app_produit_index') }}" class="btn btn-warning"><i class="bi bi-card-list"></i> Liste</a>
                 </div>
             </div>
             <div class="row formualire-liste">
-                <div class="col-lg-12 liste">
+                <div class="col-lg-12 formulaire">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="card-title">Liste</h5>
+                            <h5 class="card-title">Formualire</h5>
                         </div>
                         <div class="card-body">
-                            <table id="liste" class="table table-striped">
-                                <thead>
-                                <tr>
-                                    <th class="text-center">#</th>
-                                    <th class="text-center">Code</th>
-                                    <th class="text-center">Catégorie</th>
-                                    <th class="text-center">Nom</th>
-                                    <th class="text-center">Montant</th>
-                                    <th class="text-center">Stock</th>
-                                    <th class="text-center">Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for produit in produits %}
-                                    <tr>
-                                        <td class="text-center">{{ loop.index }}</td>
-                                        <td class="text-center">{{ produit.code }}</td>
-                                        <td class="text-left">{{ produit.categorie.nom }}</td>
-                                        <td class="text-left">{{ produit.nom }}</td>
-                                        <td class="text-center">{{ produit.montant }}</td>
-                                        <td class="text-center">{{ produit.stock ? produit.stock : 0 }}</td>
-                                        <td class="text-center">
-                                            <a href="#" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
-                                            <a href="{{ path('app_produit_edit', {'slug': produit.slug}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
-                                        </td>
-                                    </tr>
+                            {{ include('produit/_form.html.twig', {'button_label': 'Modifier'}) }}
 
-                                {% endfor %}
-                                </tbody>
-                            </table>
+                            {{ include('produit/_delete_form.html.twig') }}
                         </div>
                     </div>
                 </div>
@@ -60,7 +33,7 @@
 {% endblock %}
 
 {% block title %}
-    Liste des {{ categorie.nom }}s
+    Gestion des categories
 {% endblock %}
 {% block stylesheets %}
     {{ parent() }}
@@ -101,4 +74,3 @@
         });
     </script>
 {% endblock %}
-

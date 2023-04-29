@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Categorie;
 use App\Form\CategorieType;
 use App\Repository\CategorieRepository;
+use App\Repository\ProduitRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,11 +53,12 @@ class CategorieController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_categorie_show', methods: ['GET'])]
-    public function show(Categorie $categorie): Response
+    #[Route('/{slug}', name: 'app_categorie_show', methods: ['GET'])]
+    public function show(Categorie $categorie, ProduitRepository $produitRepository): Response
     {
         return $this->render('categorie/show.html.twig', [
             'categorie' => $categorie,
+            'produits' => $produitRepository->findBy(['categorie' => $categorie->getId()], ['nom' => "ASC"])
         ]);
     }
 
