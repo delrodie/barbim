@@ -8,12 +8,14 @@ use App\Entity\Commande;
 use App\Entity\Fournisseur;
 use App\Entity\Gerant;
 use App\Entity\Produit;
+use App\Entity\Recette;
 use App\Repository\AchatRepository;
 use App\Repository\CategorieRepository;
 use App\Repository\CommandeRepository;
 use App\Repository\FournisseurRepository;
 use App\Repository\GerantRepository;
 use App\Repository\ProduitRepository;
+use App\Repository\RecetteRepository;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
@@ -22,6 +24,7 @@ use Doctrine\ORM\Mapping\PostUpdate;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Flasher\Prime\Flasher;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -34,7 +37,7 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         private FournisseurRepository $fournisseurRepository, private Flasher $flasher,
         private CategorieRepository $categorieRepository, private ProduitRepository $produitRepository,
         private CommandeRepository $commandeRepository, private AchatRepository $achatRepository,
-        private GerantRepository $gerantRepository
+        private GerantRepository $gerantRepository, private RecetteRepository $recetteRepository
     )
     {
     }
@@ -45,50 +48,7 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             Events::postPersist,
             Events::postUpdate,
             Events::postRemove,
-            Events::preFlush,
         ];
-    }
-
-    public function preFlush(PreFlushEventArgs $args): void
-    {
-        $em = $args->getObjectManager();
-        $unitOfWork = $em->getUnitOfWork();
-        $entities = $unitOfWork->getScheduledEntityInsertions();
-
-        foreach ($entities as $entity){
-            if ($entity instanceof Commande) {
-                $verif = $this->commandeRepository->findOneBy(['ref' => $entity->getRef(), 'fournisseur' => $entity->getFournisseur()]);
-                if ($verif){
-                    //$this->messageFlasher("");
-
-                    $response = new RedirectResponse('/commande', 301);
-                    //$message="test";
-
-                    $this->flasher
-                        ->options([
-                            'timer' => 7000,
-                            'position' => 'top-center'
-                        ])
-                        ->addError("Echef, cette commande a déjà été enregistrée {$response}");
-
-                    throw new ValidatorException("Echec, cette commande a déjà été enregistrée");
-                }
-            }
-
-            if ($entity instanceof Achat){
-                $verif = $this->achatRepository->findOneBy([
-                    'commande' => $entity->getCommande()->getId(),
-                    'produit' => $entity->getProduit()->getId()
-                ]);
-                if ($verif){
-                    $response = new RedirectResponse("/achat/{$entity->getCommande()->getId()}", 301);
-                }
-            }
-
-
-        }
-
-
     }
 
     public function postPersist(LifecycleEventArgs $args)
@@ -128,6 +88,11 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $this->slug($args, 'gerant');
             $this->matriculeGerant($args);
             $message = "Le gérant '{$entity->getNom()}' a été ajouté avec succès!";
+        }
+
+        if ($entity instanceof Recette){
+            $this->codeRecette($args);
+            $message = "La recette effectuée par le (la) gérant(e) '{$entity->getGerant()->getNom()}' a été ajoutée avec succès!";
         }
 
         $this->messageFlasher($message);
@@ -190,6 +155,10 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         if ($entity instanceof Achat){
             $this->achatDelete($args);
             $message = "Le produit '{$entity->getProduit()->getNom()}' a été supprimé avec succès!";
+        }
+
+        if ($entity instanceof Recette){
+            $message = "La recette '{$entity->getCode()} a été supprimée avec succès!";
         }
 
         $this->messageFlasher($message);
@@ -336,6 +305,16 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
 
         $entity->setMatricule(random_int(1001,9999));
         $this->gerantRepository->save($entity, true);
+
+        return true;
+    }
+
+    public function codeRecette(LifecycleEventArgs $args)
+    {
+        $entity = $args->getObject(); //dd();
+        $code = strtotime($entity->getDateRecette()->format('Y-m-d'));
+        $entity->setCode(date('ymd', $code));
+        $this->recetteRepository->save($entity, true);
 
         return true;
     }
