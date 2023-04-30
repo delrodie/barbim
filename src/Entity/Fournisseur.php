@@ -7,8 +7,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use phpDocumentor\Reflection\Types\True_;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: FournisseurRepository::class)]
+#[UniqueEntity(fields: "nom", message: "Ce fournisseur a déjà été enregistré dans le système")]
 class Fournisseur
 {
     #[ORM\Id]

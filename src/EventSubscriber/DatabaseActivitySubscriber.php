@@ -6,11 +6,13 @@ use App\Entity\Achat;
 use App\Entity\Categorie;
 use App\Entity\Commande;
 use App\Entity\Fournisseur;
+use App\Entity\Gerant;
 use App\Entity\Produit;
 use App\Repository\AchatRepository;
 use App\Repository\CategorieRepository;
 use App\Repository\CommandeRepository;
 use App\Repository\FournisseurRepository;
+use App\Repository\GerantRepository;
 use App\Repository\ProduitRepository;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Event\PreFlushEventArgs;
@@ -31,7 +33,8 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
     public function __construct(
         private FournisseurRepository $fournisseurRepository, private Flasher $flasher,
         private CategorieRepository $categorieRepository, private ProduitRepository $produitRepository,
-        private CommandeRepository $commandeRepository, private AchatRepository $achatRepository
+        private CommandeRepository $commandeRepository, private AchatRepository $achatRepository,
+        private GerantRepository $gerantRepository
     )
     {
     }
@@ -81,6 +84,8 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
                     $response = new RedirectResponse("/achat/{$entity->getCommande()->getId()}", 301);
                 }
             }
+
+
         }
 
 
@@ -119,6 +124,12 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $message = "Le produit '{$entity->getProduit()->getNom()}' a été ajouté avec succès à la commande '{$entity->getCommande()->getRef()}'";
         }
 
+        if ($entity instanceof Gerant){
+            $this->slug($args, 'gerant');
+            $this->matriculeGerant($args);
+            $message = "Le gérant '{$entity->getNom()}' a été ajouté avec succès!";
+        }
+
         $this->messageFlasher($message);
     }
 
@@ -148,6 +159,12 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         if ($entity instanceof Commande){
             //$this->commandeReste($args);
             $message = "La commande '{$entity->getRef()}' a été modifiée avec succès!";
+        }
+
+        if ($entity instanceof Gerant){
+            $this->slug($args, 'gerant');
+            //$this->matriculeGerant($args);
+            $message = "Le gérant '{$entity->getNom()}' a été modifié avec succès!";
         }
 
         $this->messageFlasher($message);
@@ -313,5 +330,14 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         return true;
     }
 
+    public function matriculeGerant(LifecycleEventArgs $args): bool
+    {
+        $entity = $args->getObject();
+
+        $entity->setMatricule(random_int(1001,9999));
+        $this->gerantRepository->save($entity, true);
+
+        return true;
+    }
 
 }

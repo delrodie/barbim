@@ -4,8 +4,10 @@ namespace App\Entity;
 
 use App\Repository\AchatRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: AchatRepository::class)]
+#[UniqueEntity(fields: ["commande","produit"],message: "Echec, cet achat a déjà été ajouté!")]
 class Achat
 {
     #[ORM\Id]
