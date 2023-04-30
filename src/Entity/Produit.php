@@ -153,4 +153,9 @@ class Produit
     {
         return $this->updatedAt = new \DateTime();
     }
+
+    public function __toString(): string
+    {
+        return $this->getNom();
+    }
 }

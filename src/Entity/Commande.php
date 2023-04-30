@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CommandeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -38,6 +40,17 @@ class Commande
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCde = null;
+
+    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: Achat::class)]
+    private Collection $achats;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $benefice = null;
+
+    public function __construct()
+    {
+        $this->achats = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -142,6 +155,53 @@ class Commande
     public function setDateCde(?\DateTimeInterface $dateCde): self
     {
         $this->dateCde = $dateCde;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Achat>
+     */
+    public function getAchats(): Collection
+    {
+        return $this->achats;
+    }
+
+    public function addAchat(Achat $achat): self
+    {
+        if (!$this->achats->contains($achat)) {
+            $this->achats->add($achat);
+            $achat->setCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAchat(Achat $achat): self
+    {
+        if ($this->achats->removeElement($achat)) {
+            // set the owning side to null (unless already changed)
+            if ($achat->getCommande() === $this) {
+                $achat->setCommande(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getRef().'-'.$this->getFournisseur()->getNom();
+    }
+
+    public function getBenefice(): ?int
+    {
+        return $this->benefice;
+    }
+
+    public function setBenefice(?int $benefice): self
+    {
+        $this->benefice = $benefice;
 
         return $this;
     }

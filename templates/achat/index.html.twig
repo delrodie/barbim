@@ -3,7 +3,7 @@
 {% block body %}
     <main>
         <div class="header">
-            <h2>Gestion des commandes</h2>
+            <h2>Gestion des achats</h2>
             <span id="date"></span>
         </div>
 
@@ -15,10 +15,7 @@
                             <h5 class="card-title">Formulaire</h5>
                         </div>
                         <div class="card-body">
-                            {{ include('commande/_form.html.twig', {'button_label': 'Modifier'}) }}
-
-                            <div class="mt-5">{{ include('commande/_delete_form.html.twig') }}</div>
-
+                            {{ include('achat/_form.html.twig') }}
                         </div>
                     </div>
                 </div>
@@ -32,30 +29,28 @@
                                 <thead>
                                 <tr>
                                     <th class="text-center">#</th>
-                                    <th class="text-center">Reference</th>
-                                    <th class="text-center">Fournisseur</th>
+                                    <th class="text-center">achats</th>
+                                    <th class="text-center">Quantité</th>
                                     <th class="text-center">Montant</th>
-                                    <th class="text-center">Date</th>
-                                    <th class="text-center">Produit</th>
+                                    <th class="text-center">Stock final</th>
+                                    <th class="text-center">P.U.</th>
+                                    <th class="text-center">Benefice</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for commande in commandes %}
+                                {% for achat in achats %}
                                     <tr>
                                         <td class="text-center">{{ loop.index }}</td>
-                                        <td class="text-center">{{ commande.ref }}</td>
-                                        <td>{{ commande.fournisseur.nom }}</td>
-                                        <td class="text-center">{{ commande.montant|number_format(0,'','.') }}</td>
-                                        <td class="text-center">{{ commande.dateCde|date('Y-m-d') }}</td>
-                                        <td class="text-center">{{ commande.achats|length }}</td>
+                                        <td class="text-center">{{ achat.produit.nom }}</td>
+                                        <td class="text-center">{{ achat.quantite }}</td>
+                                        <td class="text-center">{{ achat.montant|number_format(0,'',' ') }}</td>
+                                        <td class="text-center">{{ achat.stockFinal }}</td>
+                                        <td class="text-center">{{ achat.prixUnitaire|number_format(0,'',' ') }}</td>
+                                        <td class="text-center">{{ achat.benefice|number_format(0,'',' ') }}</td>
                                         <td class="text-center">
-                                            <a href="{{ path('app_commande_show', {'id': commande.id}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
-                                            <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
-                                            {% if commande.flag is not null %}
-                                                &nbsp;|&nbsp; <a href="" title="Ajouter un produit"><i class="bi bi-plus-circle-fill"></i></a>
-                                            {% endif %}
-
+                                            <a href="{{ path('app_achat_show', {'id': achat.id}) }}" title="Liste des achats"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
+                                            <a href="{{ path('app_achat_edit', {'id': achat.id}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
                                         </td>
                                     </tr>
 
@@ -72,7 +67,7 @@
 {% endblock %}
 
 {% block title %}
-    Gestion des commandes
+    Gestion des achats
 {% endblock %}
 {% block stylesheets %}
     {{ parent() }}
@@ -113,3 +108,4 @@
         });
     </script>
 {% endblock %}
+

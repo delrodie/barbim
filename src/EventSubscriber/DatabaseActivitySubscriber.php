@@ -2,10 +2,12 @@
 
 namespace App\EventSubscriber;
 
+use App\Entity\Achat;
 use App\Entity\Categorie;
 use App\Entity\Commande;
 use App\Entity\Fournisseur;
 use App\Entity\Produit;
+use App\Repository\AchatRepository;
 use App\Repository\CategorieRepository;
 use App\Repository\CommandeRepository;
 use App\Repository\FournisseurRepository;
@@ -29,7 +31,7 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
     public function __construct(
         private FournisseurRepository $fournisseurRepository, private Flasher $flasher,
         private CategorieRepository $categorieRepository, private ProduitRepository $produitRepository,
-        private CommandeRepository $commandeRepository
+        private CommandeRepository $commandeRepository, private AchatRepository $achatRepository
     )
     {
     }
@@ -69,6 +71,16 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
                     throw new ValidatorException("Echec, cette commande a déjà été enregistrée");
                 }
             }
+
+            if ($entity instanceof Achat){
+                $verif = $this->achatRepository->findOneBy([
+                    'commande' => $entity->getCommande()->getId(),
+                    'produit' => $entity->getProduit()->getId()
+                ]);
+                if ($verif){
+                    $response = new RedirectResponse("/achat/{$entity->getCommande()->getId()}", 301);
+                }
+            }
         }
 
 
@@ -100,6 +112,11 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         if ($entity instanceof Commande){
             $this->commandeReste($args);
             $message = "La commande '{$entity->getRef()}' a été ajoutée avec succès!";
+        }
+
+        if ($entity instanceof Achat){
+            $this->achatSave($args);
+            $message = "Le produit '{$entity->getProduit()->getNom()}' a été ajouté avec succès à la commande '{$entity->getCommande()->getRef()}'";
         }
 
         $this->messageFlasher($message);
@@ -151,6 +168,11 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
 
         if ($entity instanceof Produit){
             $message = "Le produit '{$entity->getNom()}' a été supprimé avec succès!";
+        }
+
+        if ($entity instanceof Achat){
+            $this->achatDelete($args);
+            $message = "Le produit '{$entity->getProduit()->getNom()}' a été supprimé avec succès!";
         }
 
         $this->messageFlasher($message);
@@ -214,6 +236,79 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         $entity->setReste($entity->getMontant());
         $entity->setFlag(0);
         $this->commandeRepository->save($entity, true);
+
+        return true;
+    }
+
+    public function achatSave(LifecycleEventArgs $args)
+    {
+        $entity = $args->getObject();
+
+        // Variables
+        $quantite = (int) $entity->getQuantite();
+        $stock = (int) $entity->getProduit()->getStock();
+        $prixVente = (int) $entity->getProduit()->getMontant();
+        $montantAchat = (int) $entity->getMontant();
+        $reste = (int) $entity->getCommande()->getReste();
+        $stockInitial = $stock;
+        $beneficeTotal = (int) $entity->getCommande()->getBenefice();
+
+        // Calcul
+        $stockFinal = $stockInitial + $quantite;
+        $prixUnitaire =  $montantAchat /  $quantite;
+        $prixVenteTotal = $quantite * $prixVente;
+        $benefice = $prixVenteTotal - $montantAchat;
+        $beneficeTotal += $benefice;
+
+        // Mise a jour de la table produit
+        $produit = $entity->getProduit();
+        $produit->setStock($quantite + $stock);
+        $this->produitRepository->save($produit, true);
+
+        // Mise a jour de la table achat
+        $entity->setStockInitial($stock);
+        $entity->setStockFinal($stockFinal);
+        $entity->setBenefice($benefice);
+        $entity->setPrixUnitaire($prixUnitaire);
+        $this->achatRepository->save($entity, true);
+
+        // Mise a jour de la table Commande
+        $commande = $entity->getCommande();
+        $commande->setReste($reste - $montantAchat);
+        $commande->setBenefice($beneficeTotal);
+        $this->commandeRepository->save($commande, true);
+
+        return true;
+    }
+
+    public function achatDelete(LifecycleEventArgs $args)
+    {
+        $entity = $args->getObject();
+
+        // Variables
+        $quantite = (int) $entity->getQuantite();
+        $stock = (int) $entity->getProduit()->getStock();
+        $prixVente = (int) $entity->getProduit()->getMontant();
+        $montantAchat = (int) $entity->getMontant();
+        $reste = (int) $entity->getCommande()->getReste();
+        $stockInitial = $stock;
+        $beneficeTotal = (int) $entity->getCommande()->getBenefice();
+
+        // Calcul
+        $prixVenteTotal = $quantite * $prixVente;
+        $benefice = $prixVenteTotal - $montantAchat;
+        $beneficeTotal -= $benefice;
+
+        // Mise a jour de la table produit
+        $produit = $entity->getProduit();
+        $produit->setStock($stock - $quantite);
+        $this->produitRepository->save($produit, true);
+
+        // Mise a jour de la table Commande
+        $commande = $entity->getCommande();
+        $commande->setReste($reste + $montantAchat);
+        $commande->setBenefice($beneficeTotal);
+        $this->commandeRepository->save($commande, true);
 
         return true;
     }

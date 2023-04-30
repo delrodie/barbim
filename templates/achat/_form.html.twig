@@ -1,0 +1,15 @@
+{{ form_start(form) }}
+<div class="row form-group">
+    <div class="col-2 mt-3">{{ form_row(form.commande) }}</div>
+    <div class="col-3 mt-3">{{ form_row(form.produit) }}</div>
+    <div class="col-2 mt-3">{{ form_row(form.quantite) }}</div>
+    <div class="col-2 mt-3">{{ form_row(form.montant) }}</div>
+    <div class="col-3 mt-5">
+        {{ form_widget(form) }}
+        {% if commande.reste > 0 %}
+            <a href="{{ path('app_achat_index', {'id': commande.id}) }}" class="btn btn-outline-secondary">Annuler</a>
+            <button class="btn btn-warning">{{ button_label|default('Ajouter') }}</button>
+        {% endif %}
+    </div>
+</div>
+{{ form_end(form) }}

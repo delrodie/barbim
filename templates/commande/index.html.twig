@@ -45,12 +45,14 @@
                                         <td>{{ commande.fournisseur.nom }}</td>
                                         <td class="text-center">{{ commande.montant|number_format(0,'','.') }}</td>
                                         <td class="text-center">{{ commande.dateCde|date('Y-m-d') }}</td>
-                                        <td class="text-center">#</td>
+                                        <td class="text-center">{{ commande.achats|length }}</td>
                                         <td class="text-center">
-                                            <a href="{{ path('app_commande_show', {'id': commande.id}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
+                                            {% if commande.achats|length != 0  %}
+                                                <a href="{{ path('app_commande_show', {'id': commande.id}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
+                                            {% endif %}
                                             <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
-                                            {% if commande.flag is not null %}
-                                                &nbsp;|&nbsp; <a href="" title="Ajouter un produit"><i class="bi bi-plus-circle-fill"></i></a>
+                                            {% if commande.reste > 0 %}
+                                                &nbsp;|&nbsp; <a href="{{ path('app_achat_index', {'id': commande.id}) }}" title="Ajouter un produit"><i class="bi bi-plus-circle-fill"></i></a>
                                             {% endif %}
 
                                         </td>

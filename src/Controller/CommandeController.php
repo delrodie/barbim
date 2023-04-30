@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Commande;
 use App\Form\CommandeType;
+use App\Repository\AchatRepository;
 use App\Repository\CommandeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,10 +54,11 @@ class CommandeController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_commande_show', methods: ['GET'])]
-    public function show(Commande $commande): Response
+    public function show(Commande $commande, AchatRepository $achatRepository): Response
     {
         return $this->render('commande/show.html.twig', [
             'commande' => $commande,
+            'achats' => $achatRepository->findBy(['commande' => $commande->getId()]),
         ]);
     }
 
