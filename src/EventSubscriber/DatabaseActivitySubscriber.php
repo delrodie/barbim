@@ -3,19 +3,23 @@
 namespace App\EventSubscriber;
 
 use App\Entity\Achat;
+use App\Entity\Brasserie;
 use App\Entity\Categorie;
 use App\Entity\Commande;
 use App\Entity\Fournisseur;
 use App\Entity\Gerant;
 use App\Entity\Produit;
 use App\Entity\Recette;
+use App\Entity\Vente;
 use App\Repository\AchatRepository;
+use App\Repository\BrasserieRepository;
 use App\Repository\CategorieRepository;
 use App\Repository\CommandeRepository;
 use App\Repository\FournisseurRepository;
 use App\Repository\GerantRepository;
 use App\Repository\ProduitRepository;
 use App\Repository\RecetteRepository;
+use App\Repository\VenteRepository;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
@@ -37,7 +41,8 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         private FournisseurRepository $fournisseurRepository, private Flasher $flasher,
         private CategorieRepository $categorieRepository, private ProduitRepository $produitRepository,
         private CommandeRepository $commandeRepository, private AchatRepository $achatRepository,
-        private GerantRepository $gerantRepository, private RecetteRepository $recetteRepository
+        private GerantRepository $gerantRepository, private RecetteRepository $recetteRepository,
+        private VenteRepository $venteRepository, private BrasserieRepository $brasserieRepository
     )
     {
     }
@@ -60,6 +65,11 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $this->slug($args, 'fournisseur');
 
             $message = "Le fournisseur {$entity->getNom()} a été enregistré avec succès!";
+        }
+
+        if ($entity instanceof Brasserie){
+            $this->slug($args, 'brasserie');
+            $message = "La brasserie '{$entity->getNom()}' a été enregistrée avec succès!";
         }
 
         if ($entity instanceof Categorie){
@@ -95,6 +105,11 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $message = "La recette effectuée par le (la) gérant(e) '{$entity->getGerant()->getNom()}' a été ajoutée avec succès!";
         }
 
+        if ($entity instanceof Vente){
+            $this->venteSave($args);
+            $message = "Le produit '{$entity->getProduit()->getNom()}' a été ajouté à la vente avec succès!";
+        }
+
         $this->messageFlasher($message);
     }
 
@@ -107,6 +122,11 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $this->slug($args, 'fournisseur');
 
             $message = "Le fournisseur '{$entity->getNom()}' a été modifié avec succès!";
+        }
+
+        if ($entity instanceof Brasserie){
+            $this->slug($args, 'brasserie');
+            $message = "La brasserie '{$entity->getNom()}' a été modifiée avec succès!";
         }
 
         if ($entity instanceof Categorie){
@@ -142,6 +162,10 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
 
         if ($entity instanceof Fournisseur){
             $message = "Le fournisseur {$entity->getNom()} a été supprimé avec succès!";
+        }
+
+        if ($entity instanceof Brasserie){
+            $message = "La brasserie '{$entity->getNom()}' a été supprimée avec succès!";
         }
 
         if ($entity instanceof Categorie){
@@ -244,6 +268,7 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         $prixUnitaire =  $montantAchat /  $quantite;
         $prixVenteTotal = $quantite * $prixVente;
         $benefice = $prixVenteTotal - $montantAchat;
+        $beneficeUnitaire = $prixVente - $prixUnitaire;
         $beneficeTotal += $benefice;
 
         // Mise a jour de la table produit
@@ -256,6 +281,8 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         $entity->setStockFinal($stockFinal);
         $entity->setBenefice($benefice);
         $entity->setPrixUnitaire($prixUnitaire);
+        $entity->setBeneficeUnitaire($beneficeUnitaire);
+        $entity->setReste($quantite);
         $this->achatRepository->save($entity, true);
 
         // Mise a jour de la table Commande
@@ -315,6 +342,91 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         $code = strtotime($entity->getDateRecette()->format('Y-m-d'));
         $entity->setCode(date('ymd', $code));
         $this->recetteRepository->save($entity, true);
+
+        return true;
+    }
+
+    public function venteSave(LifecycleEventArgs $args)
+    {
+        $entity = $args->getObject();
+        // Variables
+        $recette = $this->recetteRepository->findOneBy(['id' => $entity->getRecette()->getId()]);
+        $produit = $this->produitRepository->findOneBy(['id' => $entity->getProduit()->getId()]);
+        $montant = (int) $entity->getMontant();
+        $stock = (int) $produit->getStock();
+        $prixVente = (int) $produit->getMontant();
+        $montantRecette = (int) $recette->getMontant();
+
+        // Calcul
+        $quantite = (int) $montant / $prixVente;
+        $stock_final_produit = (int) $stock - $quantite;
+        $montantRecette += $montant;
+
+        $totem = false; $beneficeUnitaire=0; $i=0;
+
+        while ($totem === false){
+
+            $achats = $this->achatRepository->findOnlyOneWithResteSupZeroByProduit($entity->getProduit()->getId());
+
+            $dernierAchat=[]; $reste=0;
+            foreach ($achats as $achat){
+                $beneficeUnitaire = (int) $achat->getBeneficeUnitaire();
+                $reste = (int) $achat->getReste();
+                $dernierAchat = $achat;
+            }
+
+            $variable = [
+                'stock_final_produit' => $stock_final_produit,
+                'montant_recette' => $montantRecette,
+                'quantite' => $quantite,
+                'stock_initial' => $stock,
+            ];
+
+            // Si la quantité vendue est inférieure au reste du dernier achat alors rechercher dans l'achat précédent
+            if($reste >= $quantite ){
+                $variable['stock_final_achat'] = $reste - $quantite ;
+                $variable['benefice_total'] =  $quantite * $beneficeUnitaire;
+
+
+                $this->majApresVente($args, $dernierAchat, $produit, $recette, $variable);
+
+                $totem = true;
+            }else{ //dd('ici');
+                $variable['stock_final_achat'] = 0;
+                $variable['benefice_total'] = $reste * $beneficeUnitaire;
+
+                $this->majApresVente($args, $dernierAchat, $produit, $recette, $variable);
+                $quantite -= $reste;
+                $stock_final_produit -= $reste;
+
+
+                $totem = false;
+            }
+        }
+
+        return true;
+
+    }
+
+    public function majApresVente(LifecycleEventArgs $args, object $dernierAchat, object $produit, object $recette, array $variable)
+    {
+        $entity = $args->getObject();
+
+        // mise a jour du dernier achat, du produit, de la recette et de la vente
+        $dernierAchat->setReste($variable['stock_final_achat']);
+        $this->achatRepository->save($dernierAchat, true);
+
+        $produit->setStock((int) $variable['stock_final_produit']);
+        $this->produitRepository->save($produit, true);
+
+        $recette->setMontant($variable['montant_recette']);
+        $this->recetteRepository->save($recette, true);
+
+        $entity->setQuantite((int)$entity->getQuantite() + $variable['quantite']);
+        $entity->setStockInitial((int)$entity->getStockInitial() + $variable['stock_initial']);
+        $entity->setStockFinal((int)$entity->getStockFinal() + $variable['stock_final_produit']);
+        $entity->setBenefice((int)$entity->getBenefice() + $variable['benefice_total']);
+        $this->venteRepository->save($entity, true);
 
         return true;
     }

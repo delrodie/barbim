@@ -3,54 +3,26 @@
 {% block body %}
     <main>
         <div class="header">
-            <h2>Gestion des achats</h2>
+            <h2>Gestion des ventes</h2>
             <span id="date"></span>
         </div>
 
         <div class="content mt-5">
             <div class="row formualire-liste">
-                <div class="col-12 mb-5 text-end">
-                    <a href="{{ path('app_commande_index') }}" class="btn btn-warning"><i class="bi bi-list"></i> Liste</a>
+                <div class="col-lg-12 mb-3 text-end">
+                    <form method="post" action="{{ path('app_recette_validation', {'id': recette.id}) }}" onsubmit="return confirm('Une fois validée, vous ne pourrez plus supprimer ni modifier la recette. Voulez-vous vraiment la valider?')">
+                        <input type="hidden" name="_validation" value="{{ csrf_token('validation' ~ recette.id) }}">
+                        <a href="{{ path('app_recette_index') }}" class="btn btn-outline-secondary"><i class="bi bi-reply-all-fill"></i> Retour aux recettes</a>
+                        <button type="submit" class="btn btn-danger"><i class="bi bi-check2-circle"></i> Valider la recette</button>
+                    </form>
                 </div>
                 <div class="col-lg-12 formulaire">
-                    <div class="card recette">
+                    <div class="card">
                         <div class="card-header">
-                            <h5 class="card-title">
-                                Commande N° <strong>{{ commande.ref }}</strong> du {{ commande.dateCde|date('Y-m-d') }}
-                                <span class="text-end" style="float: right">{{ commande.fournisseur.nom }} <span class="badge bg-info">({{ commande.fournisseur.type ? 'Sous-depot' : 'Depot' }})</span></span>
-                            </h5>
+                            <h5 class="card-title">Formulaire</h5>
                         </div>
                         <div class="card-body">
-                            <div class="row row-cols-3 g-4 depot">
-                                <div class="col">
-                                    <div class="card h-100">
-                                        <div class="card-header">Nombre de Produits</div>
-                                        <div class="card-body">
-                                            <h5 class="card-title">{{ commande.achats|length }}</h5>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="card h-100">
-                                        <div class="card-header">Montant commande</div>
-                                        <div class="card-body">
-                                            <h5 class="card-title">{{ commande.montant|number_format(0,'','.') }} <span>FCFA</span></h5>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="card h-100">
-                                        <div class="card-header">Bénéfice prévisionnel</div>
-                                        <div class="card-body">
-                                            {% set benefice=0 %}
-                                            {% for achat in commande.achats %}
-                                                {% set benefice = benefice + achat.benefice %}
-                                            {% endfor %}
-                                            <h5 class="card-title">{{ benefice|number_format(0,'','.') }} <span>FCFA</span></h5>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            {{ include('vente/_form.html.twig') }}
                         </div>
                     </div>
                 </div>
@@ -68,24 +40,22 @@
                                     <th class="text-center">Quantité</th>
                                     <th class="text-center">Montant</th>
                                     <th class="text-center">Stock final</th>
-                                    <th class="text-center">P.U.</th>
                                     <th class="text-center">Benefice</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for achat in achats %}
+                                {% for vente in ventes %}
                                     <tr>
                                         <td class="text-center">{{ loop.index }}</td>
-                                        <td class="text-left">{{ achat.produit.nom }}</td>
-                                        <td class="text-center">{{ achat.quantite }}</td>
-                                        <td class="text-center">{{ achat.montant|number_format(0,'',' ') }}</td>
-                                        <td class="text-center">{{ achat.stockFinal }}</td>
-                                        <td class="text-center">{{ achat.prixUnitaire|number_format(0,'',' ') }}</td>
-                                        <td class="text-center">{{ achat.benefice|number_format(0,'',' ') }}</td>
+                                        <td class="text-center">{{ vente.produit.categorie.nom }} {{ vente.produit.nom }}</td>
+                                        <td class="text-center">{{ vente.quantite }}</td>
+                                        <td class="text-center">{{ vente.montant|number_format(0,'',' ') }}</td>
+                                        <td class="text-center">{{ vente.stockFinal }}</td>
+                                        <td class="text-center">{{ vente.benefice|number_format(0,'',' ') }}</td>
                                         <td class="text-center">
-                                            <a href="{{ path('app_achat_show', {'id': achat.id}) }}" title="Liste des achats"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
-                                            <a href="{{ path('app_achat_edit', {'id': achat.id}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
+                                            <a href="{{ path('app_vente_show', {'id': vente.id}) }}" title="Liste des ventes"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
+                                            <a href="{{ path('app_vente_edit', {'id': vente.id}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
                                         </td>
                                     </tr>
 
@@ -102,13 +72,14 @@
 {% endblock %}
 
 {% block title %}
-    Gestion des achats
+    Gestion des ventes
 {% endblock %}
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap5.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
 {% block javascripts %}
     {{ parent() }}
@@ -123,6 +94,7 @@
     <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         $(document).ready(function () {
             $('#liste').DataTable({
@@ -140,6 +112,11 @@
                     'pdfHtml5'
                 ]
             });
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2();
         });
     </script>
 {% endblock %}

@@ -108,7 +108,7 @@ class Fournisseur
 
     public function __toString(): string
     {
-        if($this->getType() === "1") $depot = "(Depôt)";
+        if($this->getType() === "0") $depot = "(Depôt)";
         else $depot = "(Sous-depot)";
 
         return "{$this->getNom()} {$depot}";

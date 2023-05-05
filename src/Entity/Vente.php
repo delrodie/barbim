@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\AchatRepository;
+use App\Repository\VenteRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
-#[ORM\Entity(repositoryClass: AchatRepository::class)]
-#[UniqueEntity(fields: ["commande","produit"],message: "Echec, cet achat a déjà été ajouté!")]
-class Achat
+#[ORM\Entity(repositoryClass: VenteRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+class Vente
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -30,20 +30,14 @@ class Achat
     #[ORM\Column(nullable: true)]
     private ?int $benefice = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $createdAt = null;
+
+    #[ORM\ManyToOne(inversedBy: 'ventes')]
     private ?Produit $produit = null;
 
-    #[ORM\ManyToOne(inversedBy: 'achats')]
-    private ?Commande $commande = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?int $prixUnitaire = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?int $beneficeUnitaire = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?int $reste = null;
+    #[ORM\ManyToOne(inversedBy: 'ventes')]
+    private ?Recette $recette = null;
 
     public function getId(): ?int
     {
@@ -110,6 +104,18 @@ class Achat
         return $this;
     }
 
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(?\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
     public function getProduit(): ?Produit
     {
         return $this->produit;
@@ -122,51 +128,21 @@ class Achat
         return $this;
     }
 
-    public function getCommande(): ?Commande
+    public function getRecette(): ?Recette
     {
-        return $this->commande;
+        return $this->recette;
     }
 
-    public function setCommande(?Commande $commande): self
+    public function setRecette(?Recette $recette): self
     {
-        $this->commande = $commande;
+        $this->recette = $recette;
 
         return $this;
     }
 
-    public function getPrixUnitaire(): ?int
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): \DateTime
     {
-        return $this->prixUnitaire;
-    }
-
-    public function setPrixUnitaire(?int $prixUnitaire): self
-    {
-        $this->prixUnitaire = $prixUnitaire;
-
-        return $this;
-    }
-
-    public function getBeneficeUnitaire(): ?int
-    {
-        return $this->beneficeUnitaire;
-    }
-
-    public function setBeneficeUnitaire(?int $beneficeUnitaire): self
-    {
-        $this->beneficeUnitaire = $beneficeUnitaire;
-
-        return $this;
-    }
-
-    public function getReste(): ?int
-    {
-        return $this->reste;
-    }
-
-    public function setReste(?int $reste): self
-    {
-        $this->reste = $reste;
-
-        return $this;
+        return $this->createdAt = new \DateTime();
     }
 }

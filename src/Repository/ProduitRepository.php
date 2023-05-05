@@ -38,6 +38,17 @@ class ProduitRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+    public function findAllProduits()
+    {
+        return $this->createQueryBuilder('p')
+            ->addSelect('b')
+            ->addSelect('c')
+            ->leftJoin('p.brasserie', 'b')
+            ->leftJoin('p.categorie', 'c')
+            ->orderBy('p.nom', "ASC")
+            ->addOrderBy('c.nom', "ASC")
+            ->getQuery()->getResult();
+    }
 
 //    /**
 //     * @return Produit[] Returns an array of Produit objects

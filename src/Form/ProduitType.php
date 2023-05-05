@@ -29,7 +29,9 @@ class ProduitType extends AbstractType
             ])
             //->add('slug')
             //->add('createdAt')
-            //->add('updatedAt')
+            ->add('brasserie', null,[
+                'attr' => ['class'=>'form-select']
+            ])
             ->add('categorie', EntityType::class,[
                 'attr'=>['class'=>'form-select'],
                 'class' => Categorie::class,

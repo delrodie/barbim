@@ -3,23 +3,13 @@
 {% block body %}
     <main>
         <div class="header">
-            <h2>Gestion des commandes</h2>
+            <h2>Gestion des brasseries</h2>
             <span id="date"></span>
         </div>
 
         <div class="content mt-5">
             <div class="row formualire-liste">
-                <div class="col-lg-12 formulaire">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title">Formulaire</h5>
-                        </div>
-                        <div class="card-body">
-                            {{ include('commande/_form.html.twig') }}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-12 liste mt-5">
+                <div class="col-lg-8 liste">
                     <div class="card">
                         <div class="card-header">
                             <h5 class="card-title">Liste</h5>
@@ -29,40 +19,36 @@
                                 <thead>
                                 <tr>
                                     <th class="text-center">#</th>
-                                    <th class="text-center">Reference</th>
-                                    <th class="text-center">Fournisseur</th>
-                                    <th class="text-center">Montant</th>
-                                    <th class="text-center">Date</th>
-                                    <th class="text-center">Produit</th>
-                                    <th class="text-center">Bénéfice</th>
+                                    <th class="text-center">Nom</th>
+                                    <th class="text-center">Produits</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for commande in commandes %}
+                                {% for brasserie in brasseries %}
                                     <tr>
                                         <td class="text-center">{{ loop.index }}</td>
-                                        <td class="text-center">{{ commande.ref }}</td>
-                                        <td>{{ commande.fournisseur.nom }}</td>
-                                        <td class="text-center">{{ commande.montant|number_format(0,'','.') }}</td>
-                                        <td class="text-center">{{ commande.dateCde|date('Y-m-d') }}</td>
-                                        <td class="text-center">{{ commande.achats|length }}</td>
-                                        <td class="text-center">{{ commande.benefice|number_format(0,'','.') }}</td>
+                                        <td>{{ brasserie.nom }}</td>
+                                        <td class="text-center">{{ brasserie.produits|length }}</td>
                                         <td class="text-center">
-                                            {% if commande.achats|length != 0  %}
-                                                <a href="{{ path('app_commande_show', {'id': commande.id}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
-                                            {% endif %}
-                                            <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
-                                            {% if commande.reste > 0 %}
-                                                &nbsp;|&nbsp; <a href="{{ path('app_achat_index', {'id': commande.id}) }}" title="Ajouter un produit"><i class="bi bi-plus-circle-fill"></i></a>
-                                            {% endif %}
-
+                                            <a href="{{ path('app_brasserie_show', {'slug': brasserie.slug}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
+                                            <a href="{{ path('app_brasserie_edit', {'slug': brasserie.slug}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
                                         </td>
                                     </tr>
 
                                 {% endfor %}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 formulaire">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Formulaire</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ include('brasserie/_form.html.twig') }}
                         </div>
                     </div>
                 </div>
@@ -73,7 +59,7 @@
 {% endblock %}
 
 {% block title %}
-    Gestion des commandes
+    Gestion des brasseries
 {% endblock %}
 {% block stylesheets %}
     {{ parent() }}

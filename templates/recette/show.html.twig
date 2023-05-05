@@ -1,42 +1,154 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Recette{% endblock %}
-
 {% block body %}
-    <h1>Recette</h1>
+    <main>
+        <div class="header">
+            <h2>Gestion des ventes</h2>
+            <span id="date"></span>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ recette.id }}</td>
-            </tr>
-            <tr>
-                <th>DateRecette</th>
-                <td>{{ recette.dateRecette ? recette.dateRecette|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Code</th>
-                <td>{{ recette.code }}</td>
-            </tr>
-            <tr>
-                <th>Montant</th>
-                <td>{{ recette.montant }}</td>
-            </tr>
-            <tr>
-                <th>CreatedAt</th>
-                <td>{{ recette.createdAt ? recette.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>UpdatedAt</th>
-                <td>{{ recette.updatedAt ? recette.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="content mt-5">
+            <div class="row formualire-liste">
+                <div class="col-lg-12 mb-5 text-end">
+                    <a href="{{ path('app_recette_index') }}" class="btn btn-warning"><i class="bi bi-reply-all-fill"></i> Retour aux recettes</a>
+                </div>
+                <div class="col-lg-12 formulaire">
+                    {# Calcul du benefice total et du nombre total de bouteilles vendues #}
+                    {% set benefice=0 %} {% set bouteille=0 %}
+                    {% for vente in recette.ventes %}
+                        {% set benefice = benefice + vente.benefice %}
+                        {% set bouteille = bouteille +  vente.quantite %}
+                    {% endfor %}
 
-    <a href="{{ path('app_recette_index') }}">back to list</a>
+                    <div class="card recette">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                Recette N° <strong>{{ recette.code }}</strong> du {{ recette.dateRecette|date('Y-m-d') }}
+                                <span class="text-end" style="float: right"><span class="badge bg-success">{{ recette.gerant.nom }}</span>  </span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row row-cols-3 g-4 depot">
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-header">Bouteilles vendues</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ bouteille }}</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-header">Montant recette</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ recette.montant|number_format(0,'','.') }} <span>FCFA</span></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-header">Bénéfice réel</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ benefice|number_format(0,'','.') }} <span>FCFA</span></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12 liste mt-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Liste</h5>
+                        </div>
+                        <div class="card-body">
+                            <table id="liste" class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">#</th>
+                                    <th class="text-center">Produits</th>
+                                    <th class="text-center">Quantité</th>
+                                    <th class="text-center">Montant</th>
+                                    <th class="text-center">Stock final</th>
+                                    <th class="text-center">Benefice</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for vente in ventes %}
+                                    <tr>
+                                        <td class="text-center">{{ loop.index }}</td>
+                                        <td class="text-left">{{ vente.produit.categorie.nom }} {{ vente.produit.nom }}</td>
+                                        <td class="text-center">{{ vente.quantite }}</td>
+                                        <td class="text-center">{{ vente.montant|number_format(0,'',' ') }}</td>
+                                        <td class="text-center">{{ vente.stockFinal }}</td>
+                                        <td class="text-center">{{ vente.benefice|number_format(0,'',' ') }}</td>
+                                        <td class="text-center">
+                                            <a href="{{ path('app_vente_show', {'id': vente.id}) }}" title="Liste des ventes"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
+                                            <a href="{{ path('app_vente_edit', {'id': vente.id}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
+                                        </td>
+                                    </tr>
 
-    <a href="{{ path('app_recette_edit', {'id': recette.id}) }}">edit</a>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    {{ include('recette/_delete_form.html.twig') }}
+    </main>
 {% endblock %}
+
+{% block title %}
+    Recette du {{ recette.dateRecette|date('Y-m-d') }} effectuée par {{ recette.gerant.nom }}
+{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap5.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#liste').DataTable({
+                buttons: [
+                    'copy', 'excel', 'pdf'
+                ],
+                language:{
+                    url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/fr-FR.json"
+                },
+                dom: 'Bfrtip',
+                buttons: [
+                    'copyHtml5',
+                    'excelHtml5',
+                    'csvHtml5',
+                    'pdfHtml5'
+                ]
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2();
+        });
+    </script>
+{% endblock %}
+

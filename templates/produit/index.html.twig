@@ -25,6 +25,7 @@
                                 <tr>
                                     <th class="text-center">#</th>
                                     <th class="text-center">Code</th>
+                                    <th class="text-center">Brasserie</th>
                                     <th class="text-center">Catégorie</th>
                                     <th class="text-center">Nom</th>
                                     <th class="text-center">Montant</th>
@@ -37,6 +38,7 @@
                                     <tr>
                                         <td class="text-center">{{ loop.index }}</td>
                                         <td class="text-center">{{ produit.code }}</td>
+                                        <td class="text-left">{{ produit.brasserie.nom }}</td>
                                         <td class="text-left">{{ produit.categorie.nom }}</td>
                                         <td class="text-left">{{ produit.nom }}</td>
                                         <td class="text-center">{{ produit.montant }}</td>

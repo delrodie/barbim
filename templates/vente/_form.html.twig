@@ -1,0 +1,12 @@
+{{ form_start(form) }}
+<div class="form-group row">
+    <div class="col-3 mt-3">{{ form_row(form.recette) }}</div>
+    <div class="col-3 mt-3">{{ form_row(form.produit) }}</div>
+    <div class="col-3 mt-3">{{ form_row(form.montant) }}</div>
+    <div class="col-3 mt-5">
+        {{ form_widget(form) }}
+        <a href="{{ path('app_vente_index', {'id': recette.id}) }}" class="btn btn-outline-secondary">Annuler</a>
+        <button class="btn btn-warning">{{ button_label|default('Enregistrer') }}</button>
+    </div>
+</div>
+{{ form_end(form) }}

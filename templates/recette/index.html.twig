@@ -35,9 +35,12 @@
                                         <td class="text-left">{{ recette.gerant.nom }}</td>
                                         <td class="text-center">{{ recette.montant|number_format(0,'',' ') }}</td>
                                         <td class="text-center">
-                                            <a href="{{ path('app_recette_show', {'id': recette.id}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
-                                            <a href="{{ path('app_recette_edit', {'id': recette.id}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
-                                            |&nbsp; <a href="" title="Ajouter un produit"><i class="bi bi-plus-circle-fill"></i></a>
+                                            <a href="{{ path('app_recette_show', {'id': recette.id}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a>
+                                            {% if recette.validation is null %}
+                                                | <a href="{{ path('app_recette_edit', {'id': recette.id}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
+                                                |&nbsp; <a href="{{ path('app_vente_index', {'id': recette.id}) }}" title="Ajouter un produit"><i class="bi bi-plus-circle-fill"></i></a>
+                                            {% endif %}
+
                                         </td>
                                     </tr>
 

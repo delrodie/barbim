@@ -39,6 +39,20 @@ class AchatRepository extends ServiceEntityRepository
         }
     }
 
+    public function findOnlyOneWithResteSupZeroByProduit($produit)
+    {
+        return $this->createQueryBuilder('a')
+            ->addSelect('p')
+            ->leftJoin('a.produit', 'p')
+            ->where('p.id = :produit')
+            ->andWhere('a.reste > 0')
+            //->orderBy('a.id', 'DESC')
+            ->setParameter('produit', $produit)
+            ->setMaxResults(1)
+            ->getQuery()->getResult()
+            ;
+    }
+
 //    /**
 //     * @return Achat[] Returns an array of Achat objects
 //     */

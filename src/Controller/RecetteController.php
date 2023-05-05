@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Recette;
 use App\Form\RecetteType;
 use App\Repository\RecetteRepository;
+use App\Repository\VenteRepository;
+use App\Utilities\AllRepository;
 use Flasher\Prime\Flasher;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/recette')]
 class RecetteController extends AbstractController
 {
-    public function __construct(private Flasher $flasher)
+    public function __construct(private Flasher $flasher, private AllRepository $allRepository)
     {
     }
 
@@ -25,8 +27,11 @@ class RecetteController extends AbstractController
         $form = $this->createForm(RecetteType::class, $recette);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            if ($recette->getDateRecette() > date('Y-m-d')){
+        if ($form->isSubmitted() && $form->isValid()) { //dd(date('Y-m-d'));
+            $today = new \DateTime();
+            $date_recette = \DateTime::createFromFormat('Y-m-d', $recette->getDateRecette()->format('Y-m-d')) ;
+            $diff = $today->diff($date_recette); //dd($diff->invert);
+            if ($diff->invert === 0){
                 $this->flasher->addError("Echec, La date saisie n'est pas valide!");
                 return $this->redirectToRoute('app_recette_index');
             }
@@ -62,10 +67,11 @@ class RecetteController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_recette_show', methods: ['GET'])]
-    public function show(Recette $recette): Response
+    public function show(Recette $recette, VenteRepository $venteRepository): Response
     {
         return $this->render('recette/show.html.twig', [
             'recette' => $recette,
+            'ventes' => $this->allRepository->getVenteByRecette($recette->getId())
         ]);
     }
 

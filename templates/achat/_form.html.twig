@@ -9,6 +9,8 @@
         {% if commande.reste > 0 %}
             <a href="{{ path('app_achat_index', {'id': commande.id}) }}" class="btn btn-outline-secondary">Annuler</a>
             <button class="btn btn-warning">{{ button_label|default('Ajouter') }}</button>
+        {% else %}
+            <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="btn btn-success"><i class="bi bi-clipboard-data"></i> Détails</a>
         {% endif %}
     </div>
 </div>
