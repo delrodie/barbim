@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Entity\Produit;
 use App\Entity\Recette;
 use App\Entity\Vente;
 use Doctrine\ORM\EntityRepository;
@@ -24,8 +25,13 @@ class VenteType extends AbstractType
             ])
             //->add('benefice')
             //->add('createdAt')
-            ->add('produit', null,[
-                'attr' => ['class' => 'form-select select2']
+            ->add('produit', EntityType::class,[
+                'attr' => ['class' => 'form-select select2'],
+                'class' => Produit::class,
+                'query_builder' => function (EntityRepository $er){
+                    return $er->createQueryBuilder('produit')->orderBy('produit.nom', "ASC");
+                },
+                'placeholder' => ''
             ])
             ->add('recette', EntityType::class,[
                 'attr' => ['class'=>'form-control'],

@@ -378,7 +378,7 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             $variable = [
                 'stock_final_produit' => $stock_final_produit,
                 'montant_recette' => $montantRecette,
-                'quantite' => $quantite,
+                //'quantite' => $quantite,
                 'stock_initial' => $stock,
             ];
 
@@ -386,6 +386,7 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             if($reste >= $quantite ){
                 $variable['stock_final_achat'] = $reste - $quantite ;
                 $variable['benefice_total'] =  $quantite * $beneficeUnitaire;
+                $variable['quantite'] = $quantite;
 
 
                 $this->majApresVente($args, $dernierAchat, $produit, $recette, $variable);
@@ -394,10 +395,11 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
             }else{ //dd('ici');
                 $variable['stock_final_achat'] = 0;
                 $variable['benefice_total'] = $reste * $beneficeUnitaire;
+                $variable['quantite'] = $reste;
 
                 $this->majApresVente($args, $dernierAchat, $produit, $recette, $variable);
                 $quantite -= $reste;
-                $stock_final_produit -= $reste;
+                //$stock_final_produit -= $reste;
 
 
                 $totem = false;
@@ -423,8 +425,8 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         $this->recetteRepository->save($recette, true);
 
         $entity->setQuantite((int)$entity->getQuantite() + $variable['quantite']);
-        $entity->setStockInitial((int)$entity->getStockInitial() + $variable['stock_initial']);
-        $entity->setStockFinal((int)$entity->getStockFinal() + $variable['stock_final_produit']);
+        $entity->setStockInitial($variable['stock_initial']);
+        $entity->setStockFinal($variable['stock_final_produit']);
         $entity->setBenefice((int)$entity->getBenefice() + $variable['benefice_total']);
         $this->venteRepository->save($entity, true);
 

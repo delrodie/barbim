@@ -47,7 +47,7 @@
                                         <td class="text-center">{{ commande.montant|number_format(0,'','.') }}</td>
                                         <td class="text-center">{{ commande.dateCde|date('Y-m-d') }}</td>
                                         <td class="text-center">{{ commande.achats|length }}</td>
-                                        <td class="text-center">{{ commande.benefice|number_format(0,'','.') }}</td>
+                                        <td class="text-center">{{ commande.benefice    |number_format(0,'','.') }}</td>
                                         <td class="text-center">
                                             {% if commande.achats|length != 0  %}
                                                 <a href="{{ path('app_commande_show', {'id': commande.id}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;

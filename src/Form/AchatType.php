@@ -27,7 +27,7 @@ class AchatType extends AbstractType
             ])
             //->add('benefice')
             ->add('produit', null,[
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control select2']
             ])
             ->add('commande', EntityType::class,[
                 'attr' => ['class' => 'form-control'],
