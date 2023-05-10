@@ -16,7 +16,9 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/recette')]
 class RecetteController extends AbstractController
 {
-    public function __construct(private Flasher $flasher, private AllRepository $allRepository)
+    public function __construct(
+        private Flasher $flasher, private AllRepository $allRepository, private RecetteRepository $recetteRepository
+    )
     {
     }
 
@@ -27,14 +29,10 @@ class RecetteController extends AbstractController
         $form = $this->createForm(RecetteType::class, $recette);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) { //dd(date('Y-m-d'));
-            $today = new \DateTime();
-            $date_recette = \DateTime::createFromFormat('Y-m-d', $recette->getDateRecette()->format('Y-m-d')) ;
-            $diff = $today->diff($date_recette); //dd($diff->invert);
-            if ($diff->invert === 0){
-                $this->flasher->addError("Echec, La date saisie n'est pas valide!");
-                return $this->redirectToRoute('app_recette_index');
-            }
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            if ($this->validation($recette)) return $this->redirectToRoute('app_recette_index');
+
             $recetteRepository->save($recette, true);
 
             return $this->redirectToRoute('app_recette_index', [], Response::HTTP_SEE_OTHER);
@@ -102,5 +100,36 @@ class RecetteController extends AbstractController
         }
 
         return $this->redirectToRoute('app_recette_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * Vérification de la validité de la recette.
+     * Si la date selectionnée est supérieure à a date du jour alors echec
+     * Si la dernière recette n'a pas été validée alors echec
+     *
+     * @param object $recette
+     * @return bool
+     */
+    public function validation(object $recette): bool
+    {
+        // Vérification de la date de vente
+        // Si elle est supérieure à la date du jour alors echec
+        $today = new \DateTime();
+        $date_recette = \DateTime::createFromFormat('Y-m-d', $recette->getDateRecette()->format('Y-m-d')) ;
+        $diff = $today->diff($date_recette);
+        if ($diff->invert === 0){
+            $this->flasher->addError("Echec, La date saisie n'est pas valide!");
+            return true;
+        }
+
+        // Vérification du statut de la dernière recette
+        // Si elle n'a pas été validée alors echec d'enregistrement de la nouvelle
+        $derniereVente = $this->recetteRepository->findOneBy([],['id'=>"DESC"]);
+        if (!$derniereVente->isValidation()){
+            $this->flasher->addError("Echec, veuillez valider la dernière recette avant d'enregistrer une nouvelle");
+            return true;
+        }
+
+        return false;
     }
 }

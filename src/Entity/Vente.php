@@ -5,9 +5,11 @@ namespace App\Entity;
 use App\Repository\VenteRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: VenteRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ["recette","produit"], message: "Ce produit a déjà été ajouté à cette vente. Veuillez modifier la quantité dans la liste")]
 class Vente
 {
     #[ORM\Id]

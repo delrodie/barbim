@@ -8,6 +8,7 @@ use App\Entity\Vente;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -19,10 +20,13 @@ class VenteType extends AbstractType
         $builder
             //->add('quantite')
             //->add('stockInitial')
-            //->add('stockFinal')
-            ->add('montant', TextType::class,[
-                'attr' => ['class' => "form-control", 'autocomplete' => 'off']
+            ->add('stockFinal', IntegerType::class,[
+                'attr' => ['class' => 'form-control'],
+                'label' => "Stock restant"
             ])
+            /*->add('montant', TextType::class,[
+                'attr' => ['class' => "form-control", 'autocomplete' => 'off']
+            ])*/
             //->add('benefice')
             //->add('createdAt')
             ->add('produit', EntityType::class,[

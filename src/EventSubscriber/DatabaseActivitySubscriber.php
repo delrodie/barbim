@@ -352,15 +352,22 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
         // Variables
         $recette = $this->recetteRepository->findOneBy(['id' => $entity->getRecette()->getId()]);
         $produit = $this->produitRepository->findOneBy(['id' => $entity->getProduit()->getId()]);
-        $montant = (int) $entity->getMontant();
-        $stock = (int) $produit->getStock();
+        //$montant = (int) $entity->getMontant();
+        $stockInital = (int) $produit->getStock();
+        $stockApresVente = (int) $entity->getStockFinal();
+
         $prixVente = (int) $produit->getMontant();
         $montantRecette = (int) $recette->getMontant();
 
-        // Calcul
-        $quantite = (int) $montant / $prixVente;
-        $stock_final_produit = (int) $stock - $quantite;
+        //calcul
+        $quantite = $stockInital - $stockApresVente;
+        $montant = $quantite * (int) $produit->getMontant();
         $montantRecette += $montant;
+
+
+        // Calcul
+        //$quantite = (int) $montant / $prixVente;
+        //$stock_final_produit = (int) $stock - $quantite;
 
         $totem = false; $beneficeUnitaire=0; $i=0;
 
@@ -370,16 +377,16 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
 
             $dernierAchat=[]; $reste=0;
             foreach ($achats as $achat){
-                $beneficeUnitaire = (int) $achat->getBeneficeUnitaire();
+                $beneficeUnitaire = (int) $achat->getBeneficeUnitaire(); //dd($beneficeUnitaire);
                 $reste = (int) $achat->getReste();
                 $dernierAchat = $achat;
             }
 
             $variable = [
-                'stock_final_produit' => $stock_final_produit,
+                'stock_final_produit' => $stockApresVente,
                 'montant_recette' => $montantRecette,
-                //'quantite' => $quantite,
-                'stock_initial' => $stock,
+                'montant' => $montant,
+                'stock_initial' => $stockInital,
             ];
 
             // Si la quantité vendue est inférieure au reste du dernier achat alors rechercher dans l'achat précédent
@@ -426,7 +433,7 @@ class DatabaseActivitySubscriber implements EventSubscriberInterface
 
         $entity->setQuantite((int)$entity->getQuantite() + $variable['quantite']);
         $entity->setStockInitial($variable['stock_initial']);
-        $entity->setStockFinal($variable['stock_final_produit']);
+        $entity->setMontant($variable['montant']);
         $entity->setBenefice((int)$entity->getBenefice() + $variable['benefice_total']);
         $this->venteRepository->save($entity, true);
 

@@ -30,7 +30,7 @@ class VenteController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             if($this->allRepository->verifStockProduit($vente)){
-               $this->flasher->addError("Echec, La quantité de '{$vente->getProduit()->getNom()}' vendue est supérieure au stock. Veuillez passer une commande d'abrod!");
+               $this->flasher->addError("Echec, La quantité de '{$vente->getProduit()->getNom()}' restante est supérieure ou égale au stock initiale. Veuillez passer une commande d'abord!");
                return $this->redirectToRoute('app_vente_index',['id' => $recette->getId()], Response::HTTP_SEE_OTHER);
             }
             $venteRepository->save($vente, true);

@@ -1,8 +1,12 @@
 {{ form_start(form) }}
 <div class="form-group row">
-    <div class="col-3 mt-3">{{ form_row(form.recette) }}</div>
+    {% if form_errors(form.recette) %}
+        <div class="col-12">{{ form_errors(form.recette) }}</div>
+    {% endif %}
+
+    <div class="col-3 mt-3">{{ form_label(form.recette) }}{{ form_widget(form.recette) }}</div>
     <div class="col-3 mt-3">{{ form_row(form.produit) }}</div>
-    <div class="col-3 mt-3">{{ form_row(form.montant) }}</div>
+    <div class="col-3 mt-3">{{ form_row(form.stockFinal) }}</div>
     <div class="col-3 mt-5">
         {{ form_widget(form) }}
         <a href="{{ path('app_vente_index', {'id': recette.id}) }}" class="btn btn-outline-secondary">Annuler</a>
