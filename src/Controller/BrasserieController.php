@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Brasserie;
 use App\Form\BrasserieType;
 use App\Repository\BrasserieRepository;
+use App\Repository\ProduitRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -53,10 +54,11 @@ class BrasserieController extends AbstractController
     }
 
     #[Route('/{slug}', name: 'app_brasserie_show', methods: ['GET'])]
-    public function show(Brasserie $brasserie): Response
+    public function show(Brasserie $brasserie, ProduitRepository $produitRepository): Response
     {
         return $this->render('brasserie/show.html.twig', [
             'brasserie' => $brasserie,
+            'produits' => $produitRepository->findBy(['brasserie' => $brasserie],['nom' => "ASC"])
         ]);
     }
 

@@ -29,7 +29,6 @@
                                     <th class="text-center">Nom</th>
                                     <th class="text-center">Montant</th>
                                     <th class="text-center">Stock</th>
-                                    <th class="text-center">Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -41,10 +40,6 @@
                                         <td class="text-left">{{ produit.nom }}</td>
                                         <td class="text-center">{{ produit.montant }}</td>
                                         <td class="text-center">{{ produit.stock ? produit.stock : 0 }}</td>
-                                        <td class="text-center">
-                                            <a href="#" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
-                                            <a href="{{ path('app_produit_edit', {'slug': produit.slug}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
-                                        </td>
                                     </tr>
 
                                 {% endfor %}

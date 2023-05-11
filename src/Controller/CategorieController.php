@@ -53,7 +53,7 @@ class CategorieController extends AbstractController
         ]);
     }
 
-    #[Route('/{slug}', name: 'app_categorie_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_categorie_show', methods: ['GET'])]
     public function show(Categorie $categorie, ProduitRepository $produitRepository): Response
     {
         return $this->render('categorie/show.html.twig', [
@@ -62,7 +62,7 @@ class CategorieController extends AbstractController
         ]);
     }
 
-    #[Route('/{slug}/edit', name: 'app_categorie_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'app_categorie_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Categorie $categorie, CategorieRepository $categorieRepository): Response
     {
         $form = $this->createForm(CategorieType::class, $categorie);

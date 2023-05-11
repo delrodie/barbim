@@ -33,8 +33,8 @@
                                         <td>{{ categorie.nom }}</td>
                                         <td class="text-center">{{ categorie.produits|length }}</td>
                                         <td class="text-center">
-                                            <a href="{{ path('app_categorie_show', {'slug': categorie.slug}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
-                                            <a href="{{ path('app_categorie_edit', {'slug': categorie.slug}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
+                                            <a href="{{ path('app_categorie_show', {'id': categorie.id}) }}" title="Liste des produits"><i class="bi bi-card-list"></i></a> &nbsp;|&nbsp;
+                                            <a href="{{ path('app_categorie_edit', {'id': categorie.id}) }}" title="Modifier"><i class="bi bi-pencil-square"></i></a>
                                         </td>
                                     </tr>
 
